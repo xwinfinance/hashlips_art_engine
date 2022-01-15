@@ -3,7 +3,7 @@ const { NETWORK } = require(`${basePath}/constants/network.js`);
 const fs = require("fs");
 const sha1 = require(`${basePath}/node_modules/sha1`);
 const { createCanvas, loadImage } = require(`${basePath}/node_modules/canvas`);
-const buildDir = `${basePath}/build`;
+const buildDir = `${basePath}/build/toppy`;
 const layersDir = `${basePath}/layers`;
 const {
   format,
@@ -21,6 +21,7 @@ const {
   network,
   solanaMetadata,
   gif,
+  nftContract
 } = require(`${basePath}/src/config.js`);
 const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
@@ -30,8 +31,10 @@ var attributesList = [];
 var dnaList = new Set();
 const DNA_DELIMITER = "-";
 const HashlipsGiffer = require(`${basePath}/modules/HashlipsGiffer.js`);
+const Web3 = require('web3');
 
 let hashlipsGiffer = null;
+const web3 = new Web3('https://bsc-dataseed.binance.org/');
 
 const buildSetup = () => {
   if (fs.existsSync(buildDir)) {
@@ -44,6 +47,13 @@ const buildSetup = () => {
     fs.mkdirSync(`${buildDir}/gifs`);
   }
 };
+
+const getHashKey = (tokenId) => {
+  let hashAddress = web3.eth.abi.encodeParameter('address', String(nftContract));
+  let hashId = web3.eth.abi.encodeParameter('int256', String(tokenId));
+  return web3.utils.soliditySha3(hashAddress, hashId) || "";
+}
+
 
 const getRarityWeight = (_str) => {
   let nameWithoutExtension = _str.slice(0, -4);
@@ -104,6 +114,7 @@ const layersSetup = (layersOrder) => {
         ? layerObj.options?.["bypassDNA"]
         : false,
   }));
+  //console.log(layers)
   return layers;
 };
 
@@ -125,18 +136,18 @@ const drawBackground = () => {
   ctx.fillRect(0, 0, format.width, format.height);
 };
 
-const addMetadata = (_dna, _edition) => {
+const addMetadata = (_dna, abstractedIndexes, _edition) => {
   let dateTime = Date.now();
   let tempMetadata = {
     name: `${namePrefix} #${_edition}`,
     description: description,
-    image: `${baseUri}/${_edition}.png`,
+    image: `${baseUri}/${abstractedIndexes}.png`,
     dna: sha1(_dna),
     edition: _edition,
     date: dateTime,
     ...extraMetadata,
     attributes: attributesList,
-    compiler: "HashLips Art Engine",
+    compiler: "Toppy Art Engine",
   };
   if (network == NETWORK.sol) {
     tempMetadata = {
@@ -179,6 +190,7 @@ const addAttributes = (_element) => {
 const loadLayerImg = async (_layer) => {
   return new Promise(async (resolve) => {
     const image = await loadImage(`${_layer.selectedElement.path}`);
+    //console.log("Image: " + image)
     resolve({ layer: _layer, loadedImage: image });
   });
 };
@@ -300,7 +312,7 @@ const writeMetaData = (_data) => {
   fs.writeFileSync(`${buildDir}/json/_metadata.json`, _data);
 };
 
-const saveMetaDataSingleFile = (_editionCount) => {
+const saveMetaDataSingleFile = (_abstractedIndexCount, _editionCount) => {
   let metadata = metadataList.find((meta) => meta.edition == _editionCount);
   debugLogs
     ? console.log(
@@ -308,7 +320,7 @@ const saveMetaDataSingleFile = (_editionCount) => {
       )
     : null;
   fs.writeFileSync(
-    `${buildDir}/json/${_editionCount}.json`,
+    `${buildDir}/json/${_abstractedIndexCount}.json`,
     JSON.stringify(metadata, null, 2)
   );
 };
@@ -332,18 +344,23 @@ const startCreating = async () => {
   let editionCount = 1;
   let failedCount = 0;
   let abstractedIndexes = [];
+  let editions = [];
   for (
     let i = network == NETWORK.sol ? 0 : 1;
     i <= layerConfigurations[layerConfigurations.length - 1].growEditionSizeTo;
     i++
   ) {
-    abstractedIndexes.push(i);
+
+    const key = getHashKey(i)
+    abstractedIndexes.push(key);
+    editions.push(i);
   }
   if (shuffleLayerConfigurations) {
     abstractedIndexes = shuffle(abstractedIndexes);
+    editions = shuffle(editions);
   }
   debugLogs
-    ? console.log("Editions left to create: ", abstractedIndexes)
+    ? console.log("Editions left to create: ", editions)
     : null;
   while (layerConfigIndex < layerConfigurations.length) {
     const layers = layersSetup(
@@ -355,6 +372,7 @@ const startCreating = async () => {
       let newDna = createDna(layers);
       if (isDnaUnique(dnaList, newDna)) {
         let results = constructLayerToDna(newDna, layers);
+        //console.log(results)
         let loadedElements = [];
 
         results.forEach((layer) => {
@@ -392,11 +410,11 @@ const startCreating = async () => {
             hashlipsGiffer.stop();
           }
           debugLogs
-            ? console.log("Editions left to create: ", abstractedIndexes)
+            ? console.log("Editions left to create: ", editions)
             : null;
           saveImage(abstractedIndexes[0]);
-          addMetadata(newDna, abstractedIndexes[0]);
-          saveMetaDataSingleFile(abstractedIndexes[0]);
+          addMetadata(newDna, abstractedIndexes[0], editions[0]);
+          saveMetaDataSingleFile(abstractedIndexes[0], editions[0]);
           console.log(
             `Created edition: ${abstractedIndexes[0]}, with DNA: ${sha1(
               newDna
@@ -406,6 +424,7 @@ const startCreating = async () => {
         dnaList.add(filterDNAOptions(newDna));
         editionCount++;
         abstractedIndexes.shift();
+        editions.shift();
       } else {
         console.log("DNA exists!");
         failedCount++;

@@ -274,7 +274,7 @@ Setting the `repeat: -1` will produce a one time render and `repeat: 0` will loo
 
 ```js
 const gif = {
-  export: true,
+  export: false,
   repeat: 0,
   quality: 100,
   delay: 500,

@@ -1,14 +1,21 @@
 const basePath = process.cwd();
 const fs = require("fs");
 const layersDir = `${basePath}/layers`;
+const buildRarityDir = `${basePath}/build/toppy`;
 
 const { layerConfigurations } = require(`${basePath}/src/config.js`);
 
 const { getElements } = require("../src/main.js");
 
+// // read json data
+// let rawdataRarity = fs.readFileSync(`${basePath}/build/toppy/json/toppy-rarity-output.json`);
+// let rarityOutputData = JSON.parse(rawdataRarity);
+// console.log(rarityOutputData)
+
 // read json data
-let rawdata = fs.readFileSync(`${basePath}/build/json/_metadata.json`);
+let rawdata = fs.readFileSync(`${basePath}/build/toppy/json/_metadata.json`);
 let data = JSON.parse(rawdata);
+console.log(data)
 let editionSize = data.length;
 
 let rarityData = [];
@@ -27,6 +34,7 @@ layerConfigurations.forEach((config) => {
         trait: element.name,
         weight: element.weight.toFixed(0),
         occurrence: 0, // initialize at 0
+        chance: "", 
       };
       elementsForLayer.push(rarityDataElement);
     });
@@ -66,9 +74,10 @@ for (var layer in rarityData) {
     let chance =
       ((rarityData[layer][attribute].occurrence / editionSize) * 100).toFixed(2);
 
-    // show two decimal places in percent
-    rarityData[layer][attribute].occurrence =
-      `${rarityData[layer][attribute].occurrence} in ${editionSize} editions (${chance} %)`;
+      rarityData[layer][attribute].chance = chance
+    //   // show two decimal places in percent
+    // rarityData[layer][attribute].occurrence =
+    //   `${rarityData[layer][attribute].occurrence} in ${editionSize} editions (${chance} %)`;
   }
 }
 
@@ -80,3 +89,26 @@ for (var layer in rarityData) {
   }
   console.log();
 }
+
+console.log("printing rarity json....")
+var tempHeader = []
+
+for (var layer in rarityData) {
+  let headerMetadata = {
+    "traittype": `${layer}`,
+    "attributes": []
+  };
+  tempHeader.push(headerMetadata)
+  var tempAtt = []
+  for (var trait in rarityData[layer]) {
+    tempAtt.push(rarityData[layer][trait])
+  }
+  headerMetadata.attributes = JSON.stringify(tempAtt).replace(/\\/g, '');
+}
+  // write to the file
+  // please reformat "[" in the attributes
+  str = JSON.stringify(tempHeader, null, 2).replace(/\\/g, '');
+  fs.writeFileSync(
+    `${buildRarityDir}/json/toppy-rarity-output.json`,
+    str
+  );

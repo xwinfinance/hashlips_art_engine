@@ -5,9 +5,10 @@ const { NETWORK } = require(`${basePath}/constants/network.js`);
 const network = NETWORK.eth;
 
 // General metadata for Ethereum
-const namePrefix = "Your Collection";
-const description = "Remember to replace this description";
-const baseUri = "ipfs://NewUriToReplace";
+const nftContract = "0xD3592637E410262DC7609665ed5cbf766c6e604F" // use for the hashedKey generation
+const namePrefix = "Toppy"
+const description = "Toppy and friends collection is the main characters in Toppy story";
+const baseUri = "ipfs://bafybeibifa3byusn7lfiyfswqw2b3o7trnjkbsybnl44zr6vutzwqrejw4";
 
 const solanaMetadata = {
   symbol: "YC",
@@ -24,15 +25,14 @@ const solanaMetadata = {
 // If you have selected Solana then the collection starts from 0 automatically
 const layerConfigurations = [
   {
-    growEditionSizeTo: 5,
+    growEditionSizeTo: 100,
     layersOrder: [
       { name: "Background" },
-      { name: "Eyeball" },
-      { name: "Eye color" },
-      { name: "Iris" },
-      { name: "Shine" },
-      { name: "Bottom lid" },
-      { name: "Top lid" },
+      { name: "Body"},
+      { name: "Sunglasses"},
+      { name: "Cheeks", options: { blend: MODE.overlay, opacity: 0.7 } },
+      { name: "Mouth" },
+      { name: "Hands" }
     ],
   },
 ];
@@ -42,8 +42,8 @@ const shuffleLayerConfigurations = false;
 const debugLogs = false;
 
 const format = {
-  width: 512,
-  height: 512,
+  width: 256,
+  height: 256,
   smoothing: false,
 };
 
@@ -92,7 +92,7 @@ const preview = {
 };
 
 const preview_gif = {
-  numberOfImages: 5,
+  numberOfImages: 50,
   order: "ASC", // ASC, DESC, MIXED
   repeat: 0,
   quality: 100,
@@ -119,4 +119,5 @@ module.exports = {
   solanaMetadata,
   gif,
   preview_gif,
+  nftContract
 };
