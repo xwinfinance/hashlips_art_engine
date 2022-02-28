@@ -5,10 +5,13 @@ const { NETWORK } = require(`${basePath}/constants/network.js`);
 const network = NETWORK.eth;
 
 // General metadata for Ethereum
-const nftContract = "0xD3592637E410262DC7609665ed5cbf766c6e604F" // use for the hashedKey generation
-const namePrefix = "Toppy"
-const description = "Toppy and friends collection is the main characters in Toppy story";
-const baseUri = "ipfs://bafybeibifa3byusn7lfiyfswqw2b3o7trnjkbsybnl44zr6vutzwqrejw4";
+const layerURLBase = "https://calvinthong.s3.ap-southeast-1.amazonaws.com/nftlayer/" // layer directory
+const layerDirectory = "toppy-layers" // layer directory
+const directoryOutput = "toppy" // output directory
+const nftContract = "0xc5ec66e2D1C8c933FcC9716C2a9a57E49fdc3899" // use for the hashedKey generation
+const namePrefix = "xWIN Toppy"
+const description = "xWIN Toppy collections. Toppy serves as xWIN mascot in xWIN group. It represent the harmony, peaceful and bringing joyful to the community and the world";
+const baseUri = "ipfs://#IPFSCID#";
 
 const solanaMetadata = {
   symbol: "YC",
@@ -25,18 +28,40 @@ const solanaMetadata = {
 // If you have selected Solana then the collection starts from 0 automatically
 const layerConfigurations = [
   {
-    growEditionSizeTo: 100,
+    growEditionSizeTo: 500,
     layersOrder: [
       { name: "Background" },
       { name: "Body"},
+      { name: "Hats"},
+      { name: "Mouth"},
       { name: "Sunglasses"},
       { name: "Cheeks", options: { blend: MODE.overlay, opacity: 0.7 } },
-      { name: "Mouth" },
-      { name: "Hands" }
+      { name: "Hands" },
+      { name: "Clothes" },
+      { name: "Necklace" },
     ],
   },
 ];
-
+// const layerConfigurations = [
+//   {
+//     growEditionSizeTo: 100,
+//     layersOrder: [
+//       { name: "Background" },
+//       { name: "Base"},
+//       { name: "Glasses"},
+//       { name: "Hairs"},
+//       // { name: "Hat"},
+//       // { name: "Eyes"},
+//       { name: "Mouth"},
+//       { name: "Light"},
+//       { name: "Eyebrows"},
+//       // { name: "Zipper" },
+//       // { name: "Cheeks", options: { blend: MODE.overlay, opacity: 0.7 } },
+//       { name: "Clothes" },
+//       { name: "Earing" },      
+//     ],
+//   },
+// ];
 const shuffleLayerConfigurations = false;
 
 const debugLogs = false;
@@ -44,7 +69,7 @@ const debugLogs = false;
 const format = {
   width: 256,
   height: 256,
-  smoothing: false,
+  smoothing: true,
 };
 
 const gif = {
@@ -68,7 +93,7 @@ const text = {
 };
 
 const pixelFormat = {
-  ratio: 2 / 128,
+  ratio: 1 / 128,
 };
 
 const background = {
@@ -119,5 +144,8 @@ module.exports = {
   solanaMetadata,
   gif,
   preview_gif,
-  nftContract
+  nftContract,
+  directoryOutput,
+  layerDirectory,
+  layerURLBase
 };

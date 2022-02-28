@@ -3,8 +3,8 @@ const { NETWORK } = require(`${basePath}/constants/network.js`);
 const fs = require("fs");
 const sha1 = require(`${basePath}/node_modules/sha1`);
 const { createCanvas, loadImage } = require(`${basePath}/node_modules/canvas`);
-const buildDir = `${basePath}/build/toppy`;
-const layersDir = `${basePath}/layers`;
+
+
 const {
   format,
   baseUri,
@@ -21,8 +21,16 @@ const {
   network,
   solanaMetadata,
   gif,
-  nftContract
+  nftContract,
+  directoryOutput,
+  layerDirectory
 } = require(`${basePath}/src/config.js`);
+
+
+const layersDir = `${basePath}/layers/` + layerDirectory;
+//modify for output directory
+const buildDir = `${basePath}/build/`+ directoryOutput;
+
 const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = format.smoothing;
@@ -118,9 +126,10 @@ const layersSetup = (layersOrder) => {
   return layers;
 };
 
-const saveImage = (_editionCount) => {
+const saveImage = (_dna) => {
   fs.writeFileSync(
-    `${buildDir}/images/${_editionCount}.png`,
+    `${buildDir}/images/${sha1(_dna)}.png`,
+    // `${buildDir}/images/${_editionCount}.png`,
     canvas.toBuffer("image/png")
   );
 };
@@ -141,7 +150,7 @@ const addMetadata = (_dna, abstractedIndexes, _edition) => {
   let tempMetadata = {
     name: `${namePrefix} #${_edition}`,
     description: description,
-    image: `${baseUri}/${abstractedIndexes}.png`,
+    image: `${baseUri}/${sha1(_dna)}.png`,
     dna: sha1(_dna),
     edition: _edition,
     date: dateTime,
@@ -386,7 +395,7 @@ const startCreating = async () => {
             hashlipsGiffer = new HashlipsGiffer(
               canvas,
               ctx,
-              `${buildDir}/gifs/${abstractedIndexes[0]}.gif`,
+              `${buildDir}/gifs/${editions[0]}.gif`,
               gif.repeat,
               gif.quality,
               gif.delay
@@ -412,7 +421,7 @@ const startCreating = async () => {
           debugLogs
             ? console.log("Editions left to create: ", editions)
             : null;
-          saveImage(abstractedIndexes[0]);
+          saveImage(newDna);
           addMetadata(newDna, abstractedIndexes[0], editions[0]);
           saveMetaDataSingleFile(abstractedIndexes[0], editions[0]);
           console.log(

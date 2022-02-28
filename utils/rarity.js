@@ -8,7 +8,7 @@ const {
 } = require(`${basePath}/src/config.js`);
 
 const { getEnabledCategories } = require("trace_events");
-const layersDir = `${basePath}/` + layerDirectory;
+const layersDir = `${basePath}/layers/` + layerDirectory;
 const buildRarityDir = `${basePath}/build/`+ directoryOutput;
 const { getElements } = require("../src/main.js");
 
